@@ -6,9 +6,10 @@ namespace YatORM.Extensions
 {
     public static class ADONetExtensions
     {
-        public static SqlCommand BuildCommand(this SqlConnection conn, string queryName, IEnumerable<SqlParameter> parameters = null)
+        public static SqlCommand BuildCommand(this SqlConnection conn, string commandText,
+            IEnumerable<SqlParameter> parameters = null, CommandType commandType = CommandType.StoredProcedure)
         {
-            var cmd = new SqlCommand("dbo." + queryName, conn) { CommandType = CommandType.StoredProcedure };
+            var cmd = new SqlCommand("dbo." + commandText, conn) { CommandType = commandType };
 
             if (parameters != null)
             {

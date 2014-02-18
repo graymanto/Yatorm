@@ -13,6 +13,7 @@ namespace YatORM
     public class YatDB
     {
         private readonly string _connectionString;
+        private readonly DBToTypeConverter _converter = new DBToTypeConverter();
 
         public YatDB()
         {
@@ -24,9 +25,9 @@ namespace YatORM
             _connectionString = connectionString;
         }
 
-        public TResult GetCommand<TResult>(string query, CommandType type = CommandType.Text)
+        public IQueryable<TResult> GetCommand<TResult>(string query) where TResult : new()
         {
-            return default(TResult);
+            return ExecuteMappedCommand<TResult>(query);
         }
 
         public TResult GetCommand<TResult>(string query, dynamic parameters)
@@ -44,41 +45,21 @@ namespace YatORM
             return default(TResult);
         }
 
-        private IQueryable<TInput> ExecuteMappedCommand<TInput>(string queryName, CommandType commandType = CommandType.Text,
-            IEnumerable<SqlParameter> parameters = null)
+        private IQueryable<TResult> ExecuteMappedCommand<TResult>(string commandText, CommandType commandType = CommandType.Text,
+            IEnumerable<SqlParameter> parameters = null) where TResult : new()
         {
             using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                var cmd = conn.BuildCommand(queryName, parameters);
+                var cmd = conn.BuildCommand(commandText, parameters, commandType);
 
                 var rdr = cmd.ExecuteReader();
 
-                //var result = _converter.ReaderToMappedSequence<T>(rdr);
+                var result = _converter.ReaderToMappedSequence<TResult>(rdr);
 
                 conn.Close();
                 return result;
             }
-        }
-
-        /// <summary>
-        /// Builds a sql command.
-        /// </summary>
-        /// <param name="conn">The sql connection.</param>
-        /// <param name="queryName">Name of the query.</param>
-        /// <param name="commandType">Type of the command.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        private SqlCommand BuildCommand(SqlConnection conn, string queryName, CommandType commandType = CommandType.Text,
-            IEnumerable<SqlParameter> parameters = null)
-        {
-            var cmd = new SqlCommand("dbo." + queryName, conn) { CommandType = commandType};
-
-            if (parameters != null)
-            {
-		cmd.Parameters.AddRange(parameters.ToArray());
-            }
-            return cmd;
         }
     }
 }
