@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using FluentAssertions;
 
@@ -44,6 +40,21 @@ namespace YatORM.Tests
         }
 
         [Test]
+        public void Find_ByIdOnlyUsingConstant_ExpectFindsCorrectEntity()
+        {
+            var testIdValue = Guid.NewGuid();
+
+            var testEntity = new SingleStringTestTable { Id = testIdValue, TestString = "12345" };
+            CommandRunner.InsertEntity(testEntity);
+
+            var entity = _session.Find<SingleStringTestTable>(s => s.TestString == "12345");
+
+            entity.Should().NotBeNull();
+            entity.Id.Should().Be(testIdValue);
+            entity.TestString.Should().Be("12345");
+        }
+
+        [Test]
         public void Find_ByIdAndStringField_ExpectFindsCorrectEntity()
         {
             var testIdValue = Guid.NewGuid();
@@ -52,7 +63,8 @@ namespace YatORM.Tests
             var testEntity = new SingleStringTestTable { Id = testIdValue, TestString = testStringValue };
             CommandRunner.InsertEntity(testEntity);
 
-            var entity = _session.Find<SingleStringTestTable>(s => s.Id == testIdValue && s.TestString == testStringValue);
+            var entity =
+                _session.Find<SingleStringTestTable>(s => s.Id == testIdValue && s.TestString == testStringValue);
 
             entity.Should().NotBeNull();
             entity.Id.Should().Be(testIdValue);

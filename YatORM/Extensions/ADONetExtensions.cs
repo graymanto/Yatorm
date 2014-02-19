@@ -12,7 +12,7 @@ namespace YatORM.Extensions
             IEnumerable<SqlParameter> parameters = null, 
             CommandType commandType = CommandType.StoredProcedure)
         {
-            var cmd = new SqlCommand("dbo." + commandText, conn) { CommandType = commandType };
+            var cmd = new SqlCommand(commandText, conn) { CommandType = commandType };
 
             if (parameters != null)
             {

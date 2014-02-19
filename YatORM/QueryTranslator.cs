@@ -3,6 +3,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
+using YatORM.Extensions;
+
 namespace YatORM
 {
     public class QueryTranslator : ExpressionVisitor
@@ -221,11 +223,6 @@ namespace YatORM
                         break;
 
                     case TypeCode.String:
-                        this._sb.Append("'");
-                        this._sb.Append(c.Value);
-                        this._sb.Append("'");
-                        break;
-
                     case TypeCode.DateTime:
                         this._sb.Append("'");
                         this._sb.Append(c.Value);
@@ -250,6 +247,27 @@ namespace YatORM
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
                 this._sb.Append(m.Member.Name);
+                return m;
+            }
+
+            if (m.Expression != null && m.Expression.NodeType == ExpressionType.Constant)
+            {
+                var member = Expression.Convert(m, typeof(object));
+                var getter = Expression.Lambda<Func<object>>(member);
+                var valueResolver = getter.Compile();
+
+                var type = m.Type;
+
+                if (type == typeof(string) || type == typeof(DateTime) || type == typeof(Guid))
+                {
+                    _sb.AppendInSingleQuotes(valueResolver());
+                }
+                else if (type == typeof(bool))
+                {
+                    _sb.Append((bool)valueResolver() ? 1 : 0);
+                }
+                else this._sb.Append(valueResolver());
+
                 return m;
             }
 

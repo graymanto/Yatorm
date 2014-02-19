@@ -27,7 +27,7 @@ namespace YatORM
         public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> queryExpression) where TEntity : new()
         {
             var querySql = _translator.Translate(queryExpression);
-            var fullSql = "select * from " + typeof(TEntity).Name + " " + querySql;
+            var fullSql = "select * from " + typeof(TEntity).Name + " where " + querySql;
 
             return _db.GetSingleItem<TEntity>(fullSql);
         }

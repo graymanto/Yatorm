@@ -21,5 +21,15 @@ namespace YatORM.Extensions
 
             builder.Remove(builder.Length - 1, numberToRemove);
         }
+
+        /// <summary>
+        /// Appends a value to the string builder surrounded by single quotes.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="item"></param>
+        public static void AppendInSingleQuotes(this StringBuilder builder, object item)
+        {
+            builder.AppendFormat("'{0}'", item);
+        }
     }
 }
