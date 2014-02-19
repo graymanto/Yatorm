@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
+
 using YatORM.Extensions;
 
 namespace YatORM
@@ -13,6 +11,7 @@ namespace YatORM
     public class YatDB
     {
         private readonly string _connectionString;
+
         private readonly DBToTypeConverter _converter = new DBToTypeConverter();
 
         public YatDB()
@@ -45,7 +44,9 @@ namespace YatORM
             return default(TResult);
         }
 
-        private IQueryable<TResult> ExecuteMappedCommand<TResult>(string commandText, CommandType commandType = CommandType.Text,
+        private IQueryable<TResult> ExecuteMappedCommand<TResult>(
+            string commandText, 
+            CommandType commandType = CommandType.Text, 
             IEnumerable<SqlParameter> parameters = null) where TResult : new()
         {
             using (var conn = new SqlConnection(_connectionString))
