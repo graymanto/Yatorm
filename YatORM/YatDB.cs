@@ -29,6 +29,11 @@ namespace YatORM
             return ExecuteMappedCommand<TResult>(query);
         }
 
+        public TResult GetSingleItem<TResult>(string query) where TResult : new()
+        {
+            return ExecuteMappedCommand<TResult>(query).FirstOrDefault();
+        }
+
         public TResult GetCommand<TResult>(string query, dynamic parameters)
         {
             return default(TResult);

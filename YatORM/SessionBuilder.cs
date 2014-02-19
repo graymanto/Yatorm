@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq.Expressions;
 
 namespace YatORM
 {
@@ -33,15 +34,7 @@ namespace YatORM
 
             public IDataSession BuildSession()
             {
-                return new TempEmptySession();
-            }
-        }
-
-        public class TempEmptySession : IDataSession
-        {
-            public IEnumerable<TEntity> FindAll<TEntity>()
-            {
-                yield break;
+                return new DataSession(_connectionString);
             }
         }
     }
