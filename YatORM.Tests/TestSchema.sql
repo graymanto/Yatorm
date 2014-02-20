@@ -7,7 +7,7 @@ CREATE TABLE [dbo].[TypeTestTable](
 	[TestNullInt] [int] NULL,
 	[TestNullBigInt] [bigint] NULL,
 	[TestInt] [int] NOT NULL,
-	[TestBigInt] [int] NOT NULL,
+	[TestBigInt] [bigint] NOT NULL,
 	[TestNullDate] [datetime] NULL,
 	[TestDate] [datetime] NOT NULL,
  CONSTRAINT [PK_TypeTestTable] PRIMARY KEY CLUSTERED 

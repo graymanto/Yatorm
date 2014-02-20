@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="Constants\ResourceKeys.cs" />
     <Compile Include="Entity\SingleStringTestTable.cs" />
+    <Compile Include="Entity\TypeTestTable.cs" />
     <Compile Include="FindAllEntityTests.cs" />
     <Compile Include="FindEntityTests.cs" />
     <Compile Include="Initialize.cs" />

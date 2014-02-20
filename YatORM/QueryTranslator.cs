@@ -9,9 +9,9 @@ namespace YatORM
 {
     public class QueryTranslator : ExpressionVisitor
     {
-        private StringBuilder _sb;
+        private readonly string _orderBy = string.Empty;
 
-        private string _orderBy = string.Empty;
+        private StringBuilder _sb;
 
         private int? _skip;
 
@@ -23,7 +23,7 @@ namespace YatORM
         {
             get
             {
-                return _skip;
+                return this._skip;
             }
         }
 
@@ -31,7 +31,7 @@ namespace YatORM
         {
             get
             {
-                return _take;
+                return this._take;
             }
         }
 
@@ -39,7 +39,7 @@ namespace YatORM
         {
             get
             {
-                return _orderBy;
+                return this._orderBy;
             }
         }
 
@@ -47,16 +47,16 @@ namespace YatORM
         {
             get
             {
-                return _whereClause;
+                return this._whereClause;
             }
         }
 
         public string Translate(Expression expression)
         {
             this._sb = new StringBuilder();
-            this.Visit(expression);
-            _whereClause = this._sb.ToString();
-            return _whereClause;
+            Visit(expression);
+            this._whereClause = this._sb.ToString();
+            return this._whereClause;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -73,42 +73,42 @@ namespace YatORM
         {
             if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Where")
             {
-                this.Visit(m.Arguments[0]);
+                Visit(m.Arguments[0]);
                 var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                this.Visit(lambda.Body);
+                Visit(lambda.Body);
                 return m;
             }
 
             if (m.Method.Name == "Take")
             {
-                if (this.ParseTakeExpression(m))
+                if (ParseTakeExpression(m))
                 {
                     var nextExpression = m.Arguments[0];
-                    return this.Visit(nextExpression);
+                    return Visit(nextExpression);
                 }
             }
             else if (m.Method.Name == "Skip")
             {
-                if (this.ParseSkipExpression(m))
+                if (ParseSkipExpression(m))
                 {
                     var nextExpression = m.Arguments[0];
-                    return this.Visit(nextExpression);
+                    return Visit(nextExpression);
                 }
             }
             else if (m.Method.Name == "OrderBy")
             {
-                if (this.ParseOrderByExpression(m, "ASC"))
+                if (ParseOrderByExpression(m, "ASC"))
                 {
                     var nextExpression = m.Arguments[0];
-                    return this.Visit(nextExpression);
+                    return Visit(nextExpression);
                 }
             }
             else if (m.Method.Name == "OrderByDescending")
             {
-                if (this.ParseOrderByExpression(m, "DESC"))
+                if (ParseOrderByExpression(m, "DESC"))
                 {
                     var nextExpression = m.Arguments[0];
-                    return this.Visit(nextExpression);
+                    return Visit(nextExpression);
                 }
             }
 
@@ -121,10 +121,10 @@ namespace YatORM
             {
                 case ExpressionType.Not:
                     this._sb.Append(" NOT ");
-                    this.Visit(u.Operand);
+                    Visit(u.Operand);
                     break;
                 case ExpressionType.Convert:
-                    this.Visit(u.Operand);
+                    Visit(u.Operand);
                     break;
                 default:
                     throw new NotSupportedException(
@@ -143,7 +143,7 @@ namespace YatORM
         protected override Expression VisitBinary(BinaryExpression b)
         {
             this._sb.Append("(");
-            this.Visit(b.Left);
+            Visit(b.Left);
 
             switch (b.NodeType)
             {
@@ -164,14 +164,7 @@ namespace YatORM
                     break;
 
                 case ExpressionType.Equal:
-                    if (IsNullConstant(b.Right))
-                    {
-                        this._sb.Append(" IS ");
-                    }
-                    else
-                    {
-                        this._sb.Append(" = ");
-                    }
+                    this._sb.Append(IsNullConstant(b.Right) ? " IS " : " = ");
 
                     break;
 
@@ -201,7 +194,7 @@ namespace YatORM
                         string.Format("The binary operator '{0}' is not supported", b.NodeType));
             }
 
-            this.Visit(b.Right);
+            Visit(b.Right);
             this._sb.Append(")");
             return b;
         }
@@ -260,13 +253,16 @@ namespace YatORM
 
                 if (type == typeof(string) || type == typeof(DateTime) || type == typeof(Guid))
                 {
-                    _sb.AppendInSingleQuotes(valueResolver());
+                    this._sb.AppendInSingleQuotes(valueResolver());
                 }
                 else if (type == typeof(bool))
                 {
-                    _sb.Append((bool)valueResolver() ? 1 : 0);
+                    this._sb.Append((bool)valueResolver() ? 1 : 0);
                 }
-                else this._sb.Append(valueResolver());
+                else
+                {
+                    this._sb.Append(valueResolver());
+                }
 
                 return m;
             }
@@ -300,7 +296,6 @@ namespace YatORM
 
             ////    return true;
             ////}
-
             return false;
         }
 
@@ -311,7 +306,7 @@ namespace YatORM
             int size;
             if (int.TryParse(sizeExpression.Value.ToString(), out size))
             {
-                _take = size;
+                this._take = size;
                 return true;
             }
 
@@ -325,7 +320,7 @@ namespace YatORM
             int size;
             if (int.TryParse(sizeExpression.Value.ToString(), out size))
             {
-                _skip = size;
+                this._skip = size;
                 return true;
             }
 

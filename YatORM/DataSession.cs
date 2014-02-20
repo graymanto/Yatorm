@@ -24,6 +24,14 @@ namespace YatORM
             return _db.GetCommand<TEntity>(query);
         }
 
+        public IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> queryExpression) where TEntity : new()
+        {
+            var querySql = _translator.Translate(queryExpression);
+            var fullSql = "select * from " + typeof(TEntity).Name + " where " + querySql;
+
+            return _db.GetCommand<TEntity>(fullSql);
+        }
+
         public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> queryExpression) where TEntity : new()
         {
             var querySql = _translator.Translate(queryExpression);

@@ -190,10 +190,10 @@ namespace YatORM
                             Expression.Constant("@" + prop.Name), 
                             Expression.Constant(DBNull.Value)));
                     var addValue = Expression.Call(
-                        dest, 
-                        addMethod, 
+                        dest,
+                        addMethod,
                         Expression.New(
-                            paramConstructor, 
+                            paramConstructor,
                             Expression.Constant("@" + prop.Name), 
                             Expression.Convert(propValue, typeof(object))));
 

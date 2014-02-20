@@ -24,6 +24,28 @@ namespace YatORM.Tests
         }
 
         [Test]
+        public void Find_NothingInTable_ExpectReturnsNull()
+        {
+            var anyGuid = Guid.NewGuid();
+
+            var isNull = _session.Find<SingleStringTestTable>(s => s.Id == anyGuid);
+
+            isNull.Should().BeNull();
+        }
+
+        [Test]
+        public void Find_WrongEntryInTable_ExpectReturnsNull()
+        {
+            var testEntity = new SingleStringTestTable { Id = Guid.NewGuid(), TestString = "Any string" };
+            CommandRunner.InsertEntity(testEntity);
+
+            var anyGuid = Guid.NewGuid();
+            var isNull = _session.Find<SingleStringTestTable>(s => s.Id == anyGuid);
+
+            isNull.Should().BeNull();
+        }
+
+        [Test]
         public void Find_ByIdOnly_ExpectFindsCorrectEntity()
         {
             var testIdValue = Guid.NewGuid();
@@ -69,6 +91,51 @@ namespace YatORM.Tests
             entity.Should().NotBeNull();
             entity.Id.Should().Be(testIdValue);
             entity.TestString.Should().Be(testStringValue);
+        }
+
+        [Test]
+        public void Find_ByIntField_ExpectFindsEntity()
+        {
+            var testEntity = CreateTypeTestEntity();
+            CommandRunner.InsertEntity(testEntity);
+
+            int testInt = testEntity.TestInt;
+
+            var entity = _session.Find<TypeTestTable>(t => t.TestInt == testInt);
+
+            entity.Should().NotBeNull();
+            entity.TestInt.Should().Be(testEntity.TestInt);
+            entity.Id.Should().Be(testEntity.Id);
+        }
+
+        [Test]
+        public void Find_ByBigIntField_ExpectFindsEntity()
+        {
+            var testEntity = CreateTypeTestEntity();
+            CommandRunner.InsertEntity(testEntity);
+
+            long testBigInt = testEntity.TestBigInt;
+
+            var entity = _session.Find<TypeTestTable>(t => t.TestBigInt == testBigInt);
+
+            entity.Should().NotBeNull();
+            entity.TestBigInt.Should().Be(testEntity.TestBigInt);
+            entity.Id.Should().Be(testEntity.Id);
+        }
+
+        private TypeTestTable CreateTypeTestEntity()
+        {
+            return new TypeTestTable
+                       {
+                           Id = Guid.NewGuid(),
+                           TestBigInt = 5,
+                           TestDate = new DateTime(2014, 1, 1),
+                           TestInt = 2,
+                           TestNullBigInt = 4,
+                           TestNullDate = new DateTime(2014, 1, 2),
+                           TestNullInt = 7,
+                           TestString = "78910"
+                       };
         }
     }
 }

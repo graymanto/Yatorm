@@ -8,6 +8,8 @@ namespace YatORM
     {
         IEnumerable<TEntity> FindAll<TEntity>() where TEntity : new();
 
-        TEntity Find<TEntity>(Expression<Func<TEntity, bool>> func) where TEntity : new();
+        IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> queryExpression) where TEntity : new();
+
+        TEntity Find<TEntity>(Expression<Func<TEntity, bool>> queryExpression) where TEntity : new();
     }
 }
