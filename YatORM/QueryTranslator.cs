@@ -237,13 +237,16 @@ namespace YatORM
 
         protected override Expression VisitMember(MemberExpression m)
         {
-            if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
+            if (m.Expression == null)
+                throw new ArgumentNullException("m", "Member expression is null");
+
+            if (m.Expression.NodeType == ExpressionType.Parameter)
             {
                 this._sb.Append(m.Member.Name);
                 return m;
             }
 
-            if (m.Expression != null && m.Expression.NodeType == ExpressionType.Constant)
+            try
             {
                 var member = Expression.Convert(m, typeof(object));
                 var getter = Expression.Lambda<Func<object>>(member);
@@ -266,8 +269,12 @@ namespace YatORM
 
                 return m;
             }
-
-            throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
+            catch (Exception inner)
+            {
+                throw new NotSupportedException(
+                    string.Format("The member '{0}' is not supported", m.Member.Name),
+                    inner);
+            }
         }
 
         protected bool IsNullConstant(Expression exp)

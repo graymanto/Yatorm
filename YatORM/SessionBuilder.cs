@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq.Expressions;
 
 namespace YatORM
 {
@@ -29,12 +27,12 @@ namespace YatORM
 
             public SessionBuilderContext(string connectionString)
             {
-                _connectionString = connectionString;
+                this._connectionString = connectionString;
             }
 
             public IDataSession BuildSession()
             {
-                return new DataSession(_connectionString);
+                return new DataSession(this._connectionString);
             }
         }
     }
