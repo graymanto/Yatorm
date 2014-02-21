@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -39,19 +40,65 @@ namespace YatORM
             return default(TResult);
         }
 
-        public TResult ExecStoredProc<TResult>(string procname, dynamic parameters = null)
+        public IQueryable<TResult> ExecStoredProc<TResult, TParamType>(
+            string procname,
+            TParamType parameters = default(TParamType)) where TResult : new()
         {
-            return default(TResult);
+            var commandParams = _converter.TransformClassToSqlParameters(parameters);
+
+            return ExecuteMappedCommand<TResult>(procname, CommandType.StoredProcedure, commandParams);
         }
 
-        public TResult ExecScalarStoredProc<TResult>(string procname, dynamic parameters = null)
+        public TResult ExecScalarStoredProc<TResult>(string procname, object parameters = null) where TResult : new()
         {
-            return default(TResult);
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                var cmd = new SqlCommand(procname, conn) { CommandType = CommandType.StoredProcedure };
+
+                if (parameters != null)
+                {
+                    var commandParams = _converter.TransformClassToSqlParameters(parameters);
+                    if (commandParams != null)
+                    {
+                        commandParams.ForEach(p => cmd.Parameters.Add(p));
+                    }
+                }
+
+                var result = cmd.ExecuteScalar();
+
+                conn.Close();
+
+                // TODO: better conversion
+                return (TResult)Convert.ChangeType(result, typeof(TResult));
+            }
+        }
+
+        public int ExecNonQueryProc(string procname, object parameters = null)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                var cmd = new SqlCommand(procname, conn) { CommandType = CommandType.StoredProcedure };
+
+                if (parameters != null)
+                {
+                    var commandParams = _converter.TransformClassToSqlParameters(parameters);
+                    if (commandParams != null)
+                    {
+                        commandParams.ForEach(p => cmd.Parameters.Add(p));
+                    }
+                }
+
+                return cmd.ExecuteNonQuery();
+            }
         }
 
         private IQueryable<TResult> ExecuteMappedCommand<TResult>(
-            string commandText, 
-            CommandType commandType = CommandType.Text, 
+            string commandText,
+            CommandType commandType = CommandType.Text,
             IEnumerable<SqlParameter> parameters = null) where TResult : new()
         {
             using (var conn = new SqlConnection(_connectionString))

@@ -39,5 +39,17 @@ namespace YatORM
 
             return _db.GetSingleItem<TEntity>(fullSql);
         }
+
+        public IEnumerable<TEntity> GetFromProcedure<TEntity, TParamType>(
+            string procedureName,
+            TParamType parameters = default(TParamType)) where TEntity : new()
+        {
+            return _db.ExecStoredProc<TEntity, TParamType>(procedureName, parameters);
+        }
+
+        public int InvokeProcedure(string procedureName, object parameters = null)
+        {
+            return _db.ExecNonQueryProc(procedureName, parameters);
+        }
     }
 }

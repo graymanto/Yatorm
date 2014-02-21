@@ -17,3 +17,41 @@ CREATE TABLE [dbo].[TypeTestTable](
 ) ON [PRIMARY]
 
 GO
+
+CREATE PROCEDURE [dbo].[TestGet]
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	SELECT [Id]
+		  ,[TestString]
+		  ,[TestNullInt]
+		  ,[TestNullBigInt]
+		  ,[TestInt]
+		  ,[TestBigInt]
+		  ,[TestNullDate]
+		  ,[TestDate]
+	  FROM [TypeTestTable]
+END
+
+GO
+
+CREATE PROCEDURE [dbo].[TestGetWithParam]
+@Id uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	SELECT [Id]
+		  ,[TestString]
+		  ,[TestNullInt]
+		  ,[TestNullBigInt]
+		  ,[TestInt]
+		  ,[TestBigInt]
+		  ,[TestNullDate]
+		  ,[TestDate]
+	  FROM [TypeTestTable]
+	  where Id = @Id
+END
+
+GO
