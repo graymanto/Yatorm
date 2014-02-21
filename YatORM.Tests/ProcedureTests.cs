@@ -43,7 +43,7 @@ namespace YatORM.Tests
         {
             CommandRunner.InsertEntity(_testType);
 
-            var results = _session.GetFromProcedure<TypeTestTable, object>(StoredProcedureNames.TestGet).ToList();
+            var results = _session.GetFromProcedure<TypeTestTable>(StoredProcedureNames.TestGet).ToList();
 
             results.Should().HaveCount(1);
 
@@ -58,9 +58,26 @@ namespace YatORM.Tests
             CommandRunner.InsertEntity(_testType);
 
             var results =
-                _session.GetFromProcedure<TypeTestTable, TestGetInputs>(
+                _session.GetFromProcedure<TypeTestTable>(
                     StoredProcedureNames.TestGetWithParam,
                     new TestGetInputs { Id = _testType.Id }).ToList();
+
+            results.Should().HaveCount(1);
+
+            var testType = results.First();
+
+            CheckTestTypesAreEqual(testType);
+        }
+
+        [Test]
+        public void GetFromProcedure_WithAnonProcParamSingleEntity_ReturnsCorrectlyMappedEntity()
+        {
+            CommandRunner.InsertEntity(_testType);
+
+            var results =
+                _session.GetFromProcedure<TypeTestTable>(
+                    StoredProcedureNames.TestGetWithParam,
+                    new { Id = _testType.Id }).ToList();
 
             results.Should().HaveCount(1);
 

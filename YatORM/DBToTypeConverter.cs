@@ -11,11 +11,12 @@ using YatORM.Extensions;
 
 namespace YatORM
 {
-    public class DBToTypeConverter
+    public static class DBToTypeConverter
     {
-        private readonly ConcurrentDictionary<Type, object> _cachedParamMap = new ConcurrentDictionary<Type, object>();
+        private static readonly Func<Type, Delegate> _paramMapperFunc =
+            new Func<Type, Delegate>(MakeParamMapper).Memoize();
 
-        private readonly ConcurrentDictionary<string, object> _cachedMappers =
+        private static readonly ConcurrentDictionary<string, object> _cachedMappers =
             new ConcurrentDictionary<string, object>();
 
         /// <summary>
@@ -28,7 +29,7 @@ namespace YatORM
         /// </param>
         /// <returns>
         /// </returns>
-        public IQueryable<T> ReaderToMappedSequence<T>(IDataReader rdr) where T : new()
+        public static IQueryable<T> GetMappedSequence<T>(this IDataReader rdr) where T : new()
         {
             var cols = 0.UpTo(rdr.FieldCount - 1).Select(rdr.GetName).ToList();
 
@@ -54,30 +55,10 @@ namespace YatORM
         /// </param>
         /// <returns>
         /// </returns>
-        public IEnumerable<SqlParameter> TransformClassToSqlParameters<T>(T input)
+        public static IEnumerable<SqlParameter> TransformClassToSqlParameters<T>(T input)
         {
-            var map = GetParamMapperForClass<T>();
-            return map(input);
-        }
-
-        /// <summary>
-        /// Returns a function that turns the properties of a strongly typed class into a
-        /// list of SQL parameters. 
-        /// </summary>
-        /// <typeparam name="T">
-        /// </typeparam>
-        /// <returns>
-        /// </returns>
-        public Func<T, List<SqlParameter>> GetParamMapperForClass<T>()
-        {
-            var map = _cachedParamMap.GetOrDefault(typeof(T)) as Func<T, List<SqlParameter>>;
-            if (map == null)
-            {
-                map = MakeParamMapper<T>();
-                _cachedParamMap[typeof(T)] = map;
-            }
-
-            return map;
+            var mapper = _paramMapperFunc(input.GetType());
+            return mapper.DynamicInvoke(input) as IEnumerable<SqlParameter>;
         }
 
         /// <summary>
@@ -92,7 +73,7 @@ namespace YatORM
         /// </param>
         /// <returns>
         /// </returns>
-        private Func<IDataReader, TMapped> MakeReaderToClassMapper<TMapped>(IEnumerable<string> cols)
+        private static Func<IDataReader, TMapped> MakeReaderToClassMapper<TMapped>(IEnumerable<string> cols)
         {
             var source = Expression.Parameter(typeof(IDataReader), "reader");
             var dest = Expression.Variable(typeof(TMapped), "dest");
@@ -114,8 +95,8 @@ namespace YatORM
                 }
 
                 var getValueFromReaderExpression = Expression.Call(
-                    source, 
-                    getValueMethod, 
+                    source,
+                    getValueMethod,
                     Expression.Constant(nameOrdinalMap[property.Name]));
 
                 var valueVariable = Expression.Variable(typeof(object), "readerValue");
@@ -124,13 +105,13 @@ namespace YatORM
                 body.Add(Expression.Assign(valueVariable, getValueFromReaderExpression));
 
                 var setValueExpression = Expression.Call(
-                    dest, 
-                    setMethod, 
+                    dest,
+                    setMethod,
                     Expression.Convert(valueVariable, property.PropertyType));
 
                 var ifNotNullExpression =
                     Expression.IfThen(
-                        Expression.NotEqual(Expression.Constant(DBNull.Value), valueVariable), 
+                        Expression.NotEqual(Expression.Constant(DBNull.Value), valueVariable),
                         setValueExpression);
 
                 body.Add(ifNotNullExpression);
@@ -139,7 +120,7 @@ namespace YatORM
             body.Add(dest);
 
             var expr = Expression.Lambda<Func<IDataReader, TMapped>>(
-                Expression.Block(variables, body.ToArray()), 
+                Expression.Block(variables, body.ToArray()),
                 source);
 
             return expr.Compile();
@@ -148,11 +129,9 @@ namespace YatORM
         /// <summary>
         /// Uses the expression api to compile a function that transforms a class into SQL parameters.
         /// </summary>
-        /// <typeparam name="T">
-        /// </typeparam>
         /// <returns>
         /// </returns>
-        private Func<T, List<SqlParameter>> MakeParamMapper<T>()
+        private static Delegate MakeParamMapper(Type paramType)
         {
             var paramConstructor = typeof(SqlParameter).GetConstructor(new[] { typeof(string), typeof(object) });
 
@@ -161,10 +140,10 @@ namespace YatORM
                 return null;
             }
 
-            var source = Expression.Parameter(typeof(T), "source");
+            var source = Expression.Parameter(paramType, "source");
             var dest = Expression.Variable(typeof(List<SqlParameter>), "dest");
 
-            var allProps = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead);
+            var allProps = paramType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead);
             var addMethod = typeof(List<SqlParameter>).GetMethod("Add");
 
             var body = new List<Expression> { Expression.Assign(dest, Expression.New(typeof(List<SqlParameter>))) };
@@ -176,46 +155,36 @@ namespace YatORM
                 var propValue = Expression.Property(source, prop);
                 var isNullable = Nullable.GetUnderlyingType(prop.PropertyType) != null;
 
+                var constructNewParameterExpression = Expression.New(
+                    paramConstructor,
+                    Expression.Constant("@" + prop.Name),
+                    Expression.Convert(propValue, typeof(object)));
+
                 if (isNullable)
                 {
                     var hasValue = prop.PropertyType.GetProperty("HasValue");
 
                     var condition = Expression.Property(propValue, hasValue);
+                    var constructDbNullParameter = Expression.New(
+                        paramConstructor,
+                        Expression.Constant("@" + prop.Name),
+                        Expression.Constant(DBNull.Value));
 
-                    var addNull = Expression.Call(
-                        dest,
-                        addMethod,
-                        Expression.New(
-                            paramConstructor,
-                            Expression.Constant("@" + prop.Name), 
-                            Expression.Constant(DBNull.Value)));
-                    var addValue = Expression.Call(
-                        dest,
-                        addMethod,
-                        Expression.New(
-                            paramConstructor,
-                            Expression.Constant("@" + prop.Name), 
-                            Expression.Convert(propValue, typeof(object))));
+                    var addNull = Expression.Call(dest, addMethod, constructDbNullParameter);
+                    var addValue = constructNewParameterExpression;
 
                     body.Add(Expression.IfThenElse(condition, addValue, addNull));
                 }
                 else
                 {
-                    body.Add(
-                        Expression.Call(
-                            dest, 
-                            addMethod, 
-                            Expression.New(
-                                paramConstructor, 
-                                Expression.Constant("@" + prop.Name), 
-                                Expression.Convert(propValue, typeof(object)))));
+                    body.Add(Expression.Call(dest, addMethod, constructNewParameterExpression));
                 }
             }
 
             body.Add(dest);
 
-            var expr = Expression.Lambda<Func<T, List<SqlParameter>>>(
-                Expression.Block(variables, body.ToArray()), 
+            var expr = Expression.Lambda(
+                Expression.Block(variables, body.ToArray()),
                 source);
 
             return expr.Compile();

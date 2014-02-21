@@ -50,6 +50,7 @@
     <Compile Include="DBToTypeConverter.cs" />
     <Compile Include="Extensions\ADONetExtensions.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="Extensions\FuncExtensions.cs" />
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ReflectionAndExpressionExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />

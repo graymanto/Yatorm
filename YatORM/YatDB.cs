@@ -13,8 +13,6 @@ namespace YatORM
     {
         private readonly string _connectionString;
 
-        private readonly DBToTypeConverter _converter = new DBToTypeConverter();
-
         public YatDB()
         {
             _connectionString = ConfigurationManager.ConnectionStrings[0].ConnectionString;
@@ -40,11 +38,9 @@ namespace YatORM
             return default(TResult);
         }
 
-        public IQueryable<TResult> ExecStoredProc<TResult, TParamType>(
-            string procname,
-            TParamType parameters = default(TParamType)) where TResult : new()
+        public IQueryable<TResult> ExecStoredProc<TResult>(string procname, dynamic parameters) where TResult : new()
         {
-            var commandParams = _converter.TransformClassToSqlParameters(parameters);
+            var commandParams = parameters == null ? null : DBToTypeConverter.TransformClassToSqlParameters(parameters);
 
             return ExecuteMappedCommand<TResult>(procname, CommandType.StoredProcedure, commandParams);
         }
@@ -59,7 +55,7 @@ namespace YatORM
 
                 if (parameters != null)
                 {
-                    var commandParams = _converter.TransformClassToSqlParameters(parameters);
+                    var commandParams = DBToTypeConverter.TransformClassToSqlParameters(parameters);
                     if (commandParams != null)
                     {
                         commandParams.ForEach(p => cmd.Parameters.Add(p));
@@ -85,7 +81,7 @@ namespace YatORM
 
                 if (parameters != null)
                 {
-                    var commandParams = _converter.TransformClassToSqlParameters(parameters);
+                    var commandParams = DBToTypeConverter.TransformClassToSqlParameters(parameters);
                     if (commandParams != null)
                     {
                         commandParams.ForEach(p => cmd.Parameters.Add(p));
@@ -108,10 +104,10 @@ namespace YatORM
 
                 var rdr = cmd.ExecuteReader();
 
-                var result = _converter.ReaderToMappedSequence<TResult>(rdr);
+                var resultSet = rdr.GetMappedSequence<TResult>();
 
                 conn.Close();
-                return result;
+                return resultSet;
             }
         }
     }
