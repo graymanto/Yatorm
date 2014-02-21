@@ -3,7 +3,7 @@ GO
 
 CREATE TABLE [dbo].[TypeTestTable](
 	[Id] [uniqueidentifier] NOT NULL,
-	[TestString] [nchar](100) NULL,
+	[TestString] [nvarchar](100) NULL,
 	[TestNullInt] [int] NULL,
 	[TestNullBigInt] [bigint] NULL,
 	[TestInt] [int] NOT NULL,

@@ -85,8 +85,7 @@ namespace YatORM.Tests
             queryResult.TestNullInt.Should().Be(_testType.TestNullInt);
 
             // TODO: the trim here is a bug
-            queryResult.TestString.Trim().Should().Be(_testType.TestString.Trim());
-            
+            queryResult.TestString.Trim().Should().Be(_testType.TestString);
         }
     }
 }
