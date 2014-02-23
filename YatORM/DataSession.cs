@@ -58,7 +58,7 @@ namespace YatORM
 
         public IEnumerable<TEntity> GetFromQuery<TEntity>(string query, dynamic parameters = null) where TEntity : new()
         {
-            yield break;
+            return _db.GetCommand<TEntity>(query, parameters);
         }
 
         public bool Insert<TEntity>(TEntity item)

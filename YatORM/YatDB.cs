@@ -28,14 +28,15 @@ namespace YatORM
             return ExecuteMappedCommand<TResult>(query);
         }
 
+        public IQueryable<TResult> GetCommand<TResult>(string query, dynamic parameters) where TResult : new()
+        {
+            var commandParams = parameters == null ? null : DBToTypeConverter.TransformClassToSqlParameters(parameters);
+            return ExecuteMappedCommand<TResult>(query, CommandType.Text, commandParams);
+        }
+
         public TResult GetSingleItem<TResult>(string query) where TResult : new()
         {
             return ExecuteMappedCommand<TResult>(query).FirstOrDefault();
-        }
-
-        public TResult GetCommand<TResult>(string query, dynamic parameters)
-        {
-            return default(TResult);
         }
 
         public IQueryable<TResult> ExecStoredProc<TResult>(string procname, dynamic parameters) where TResult : new()
