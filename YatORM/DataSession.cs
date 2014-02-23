@@ -6,15 +6,12 @@ namespace YatORM
 {
     public class DataSession : IDataSession
     {
-        private readonly string _connectionString;
-
         private readonly YatDB _db;
 
         private readonly QueryTranslator _translator = new QueryTranslator();
 
         public DataSession(string connectionString)
         {
-            this._connectionString = connectionString;
             this._db = new YatDB(connectionString);
         }
 
@@ -28,6 +25,14 @@ namespace YatORM
         {
             var querySql = _translator.Translate(queryExpression);
             var fullSql = "select * from " + typeof(TEntity).Name + " where " + querySql;
+
+            return _db.GetCommand<TEntity>(fullSql);
+        }
+
+        public IEnumerable<TEntity> FindAllQuery<TEntity>(Expression<Func<IEnumerable<TEntity>, IEnumerable<TEntity>>> queryExpression) where TEntity : new()
+        {
+            var querySql = _translator.Translate(queryExpression);
+            var fullSql = "select * from " + typeof(TEntity).Name + querySql;
 
             return _db.GetCommand<TEntity>(fullSql);
         }
@@ -49,6 +54,18 @@ namespace YatORM
         public int InvokeProcedure(string procedureName, object parameters = null)
         {
             return _db.ExecNonQueryProc(procedureName, parameters);
+        }
+
+        public IEnumerable<TEntity> GetFromQuery<TEntity>(string query, dynamic parameters = null) where TEntity : new()
+        {
+            yield break;
+        }
+
+        public bool Insert<TEntity>(TEntity item)
+        {
+            var sqlTemplate = SqlGenerator.GetInsertStatementForEntity<TEntity>();
+
+            return _db.ExecuteNonQuery(sqlTemplate, item) == 1;
         }
     }
 }

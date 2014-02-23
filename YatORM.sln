@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YatORM", "YatORM\YatORM.csproj", "{4C4D6407-7AFF-4516-97A1-D21145F14661}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YatORM.Tests", "YatORM.Tests\YatORM.Tests.csproj", "{0266D1FC-0AC0-49DA-8956-7D9F2C6D22D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YatORM.UnitTests", "YatORM.UnitTests\YatORM.UnitTests.csproj", "{76FD8DC0-9CA4-4B43-9C65-D9F7C50A4C6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +23,10 @@ Global
 		{0266D1FC-0AC0-49DA-8956-7D9F2C6D22D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0266D1FC-0AC0-49DA-8956-7D9F2C6D22D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0266D1FC-0AC0-49DA-8956-7D9F2C6D22D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76FD8DC0-9CA4-4B43-9C65-D9F7C50A4C6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76FD8DC0-9CA4-4B43-9C65-D9F7C50A4C6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76FD8DC0-9CA4-4B43-9C65-D9F7C50A4C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76FD8DC0-9CA4-4B43-9C65-D9F7C50A4C6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

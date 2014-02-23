@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.Dynamic;
 using System.Linq;
 
+using YatORM.Extensions;
 using YatORM.Tests.Settings;
 
 namespace YatORM.Tests.TestTools
@@ -67,9 +70,48 @@ namespace YatORM.Tests.TestTools
             }
         }
 
+        /// <summary>
+        /// Issues a query and returns the results in dynamic objects.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public static IEnumerable<dynamic> IssueDynamicQuery(string command)
+        {
+            var results = new List<dynamic>();
+
+            using (var conn = new SqlConnection(TestSettings.ConnectionString))
+            {
+                conn.Open();
+                var cmd = new SqlCommand(command, conn);
+                var reader = cmd.ExecuteReader();
+
+                IList<string> colNames = null;
+
+                while (reader.Read())
+                {
+                    if (colNames == null) colNames = reader.GetColumnNames().ToList();
+                    results.Add(GetDynamicEntryFromReaderRow(reader, colNames));
+                }
+            }
+
+            return results;
+        }
+
+        private static dynamic GetDynamicEntryFromReaderRow(IDataReader reader, IEnumerable<string> readerColumns)
+        {
+            var result = new ExpandoObject();
+
+            var resultAsDictionary = result as IDictionary<string, object>;
+
+            readerColumns.Select((c, i) => new KeyValuePair<string, object>(c, reader.GetValue(i)))
+                .ForEach(resultAsDictionary.Add);
+
+            return result;
+        }
+
         private static int IssueNonQueryInternal(
-            SqlConnection connection, 
-            string command, 
+            SqlConnection connection,
+            string command,
             IEnumerable<SqlParameter> parameters = null)
         {
             using (var cmd = new SqlCommand(command, connection))

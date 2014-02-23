@@ -92,6 +92,27 @@ namespace YatORM
             }
         }
 
+        public int ExecuteNonQuery(string query, object parameters = null)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                var cmd = new SqlCommand(query, conn) { CommandType = CommandType.Text };
+
+                if (parameters != null)
+                {
+                    var commandParams = DBToTypeConverter.TransformClassToSqlParameters(parameters);
+                    if (commandParams != null)
+                    {
+                        commandParams.ForEach(p => cmd.Parameters.Add(p));
+                    }
+                }
+
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
         private IQueryable<TResult> ExecuteMappedCommand<TResult>(
             string commandText,
             CommandType commandType = CommandType.Text,

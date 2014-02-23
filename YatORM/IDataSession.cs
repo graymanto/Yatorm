@@ -15,5 +15,9 @@ namespace YatORM
         IEnumerable<TEntity> GetFromProcedure<TEntity>(string procedureName, dynamic parameters = null) where TEntity : new();
 
         int InvokeProcedure(string procedureName, object parameters = null);
+
+        IEnumerable<TEntity> GetFromQuery<TEntity>(string query, dynamic parameters = null) where TEntity : new();
+
+        bool Insert<TEntity>(TEntity item);
     }
 }
