@@ -5,6 +5,7 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
+using YatORM.Tests.Attributes;
 using YatORM.Tests.Constants;
 using YatORM.Tests.Entity;
 using YatORM.Tests.Settings;
@@ -12,7 +13,7 @@ using YatORM.Tests.TestTools;
 
 namespace YatORM.Tests
 {
-    [TestFixture]
+    [TestFixture, Rollback]
     public class ProcedureTests
     {
         private readonly TypeTestTable _testType = new TypeTestTable
@@ -77,7 +78,7 @@ namespace YatORM.Tests
             var results =
                 _session.GetFromProcedure<TypeTestTable>(
                     StoredProcedureNames.TestGetWithParam,
-                    new { Id = _testType.Id }).ToList();
+                    new { _testType.Id }).ToList();
 
             results.Should().HaveCount(1);
 

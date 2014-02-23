@@ -14,7 +14,6 @@ using YatORM.Tests.TestTools;
 
 namespace YatORM.Tests
 {
-
     [SetUpFixture]
     public class Initialize
     {

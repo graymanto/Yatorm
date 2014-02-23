@@ -63,6 +63,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -70,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\RollbackAttribute.cs" />
     <Compile Include="Constants\ResourceKeys.cs" />
     <Compile Include="Constants\StoredProcedureNames.cs" />
     <Compile Include="DeleteTests.cs" />
@@ -83,10 +85,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryTests.cs" />
     <Compile Include="TestTools\ResourceUtils.cs" />
-    <Compile Include="SanityCheckTest.cs" />
     <Compile Include="Settings\TestSettings.cs" />
     <Compile Include="TestTools\CommandRunner.cs" />
     <Compile Include="TestTools\SqlBuilder.cs" />
+    <Compile Include="UpdateTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

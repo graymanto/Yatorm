@@ -4,13 +4,14 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
+using YatORM.Tests.Attributes;
 using YatORM.Tests.Entity;
 using YatORM.Tests.Settings;
 using YatORM.Tests.TestTools;
 
 namespace YatORM.Tests
 {
-    [TestFixture]
+    [TestFixture, Rollback]
     public class DeleteTests
     {
         private IDataSession _session;

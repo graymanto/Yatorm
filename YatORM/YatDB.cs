@@ -102,7 +102,9 @@ namespace YatORM
 
                 if (parameters != null)
                 {
-                    var commandParams = DBToTypeConverter.TransformClassToSqlParameters(parameters);
+                    var commandParams = parameters is IEnumerable<SqlParameter>
+                                            ? (IEnumerable<SqlParameter>)parameters
+                                            : DBToTypeConverter.TransformClassToSqlParameters(parameters);
                     if (commandParams != null)
                     {
                         commandParams.ForEach(p => cmd.Parameters.Add(p));

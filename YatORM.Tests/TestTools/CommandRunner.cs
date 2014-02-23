@@ -40,7 +40,8 @@ namespace YatORM.Tests.TestTools
             using (var conn = new SqlConnection(TestSettings.ConnectionString))
             {
                 conn.Open();
-                parameters.AsParallel().ForAll(p => IssueNonQueryInternal(conn, insertCommand, p));
+                // ReSharper disable once AccessToDisposedClosure
+                parameters.ForEach(p => IssueNonQueryInternal(conn, insertCommand, p));
             }
         }
 

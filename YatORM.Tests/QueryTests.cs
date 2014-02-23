@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 using NUnit.Framework;
 
+using YatORM.Tests.Attributes;
+
 namespace YatORM.Tests
 {
-    [TestFixture]
+    [TestFixture, Rollback]
     public class QueryTests
     {
     }

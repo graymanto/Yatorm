@@ -61,6 +61,13 @@ namespace YatORM
             return mapper.DynamicInvoke(input) as IEnumerable<SqlParameter>;
         }
 
+        public static IEnumerable<SqlParameter> TransformClassToSqlParameters<T>(T input, IEnumerable<string> excludeColumns)
+        {
+            // TODO: caching
+            var mapper = MakeParamMapper(input.GetType(), excludeColumns);
+            return mapper.DynamicInvoke(input) as IEnumerable<SqlParameter>;
+        }
+
         /// <summary>
         /// Builds a compiled function that copies from fields of a datareader into properties of a class in the fastest
         /// way possible.
@@ -133,6 +140,18 @@ namespace YatORM
         /// </returns>
         private static Delegate MakeParamMapper(Type paramType)
         {
+            return MakeParamMapper(paramType, null);
+        }
+
+        /// <summary>
+        /// Uses the expression api to compile a function that transforms a class into SQL parameters.
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        private static Delegate MakeParamMapper(Type paramType, IEnumerable<string> excludeColumns)
+        {
+            if (excludeColumns == null) excludeColumns = Enumerable.Empty<string>();
+
             var paramConstructor = typeof(SqlParameter).GetConstructor(new[] { typeof(string), typeof(object) });
 
             if (paramConstructor == null)
@@ -143,7 +162,10 @@ namespace YatORM
             var source = Expression.Parameter(paramType, "source");
             var dest = Expression.Variable(typeof(List<SqlParameter>), "dest");
 
-            var allProps = paramType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead);
+            var allProps =
+                paramType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(p => p.CanRead && !excludeColumns.Contains(p.Name));
+
             var addMethod = typeof(List<SqlParameter>).GetMethod("Add");
 
             var body = new List<Expression> { Expression.Assign(dest, Expression.New(typeof(List<SqlParameter>))) };

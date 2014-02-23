@@ -75,5 +75,18 @@ namespace YatORM
 
             return _db.ExecuteNonQuery(fullSql) == 1;
         }
+
+        public bool Update<TEntity>(Expression<Func<TEntity, bool>> queryExpression, TEntity entity)
+        {
+            var querySql = _translator.Translate(queryExpression);
+            IEnumerable<string> excludeColumns = new[] { "Id" };
+            var sqlTemplate = SqlGenerator.GetUpdateStatementForEntity(entity, excludeColumns);
+
+            var fullSql = sqlTemplate + " where " + querySql;
+
+            var parameters = DBToTypeConverter.TransformClassToSqlParameters(entity, excludeColumns);
+
+            return _db.ExecuteNonQuery(fullSql, parameters) == 1;
+        }
     }
 }

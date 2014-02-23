@@ -21,5 +21,7 @@ namespace YatORM
         bool Insert<TEntity>(TEntity item);
 
         bool Delete<TEntity>(Expression<Func<TEntity, bool>> queryExpression);
+
+        bool Update<TEntity>(Expression<Func<TEntity, bool>> queryExpression, TEntity entity);
     }
 }

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 using YatORM.Extensions;
@@ -23,6 +26,23 @@ namespace YatORM
             return InsertCommand.Formatted(tableName, tableColumns, parameterNames);
         }
 
+        public static string GetUpdateStatementForEntity<TEntity>(TEntity entity, IEnumerable<string> excludeColumns)
+        {
+            var entityType = typeof(TEntity);
+            const string UpdateCommand = "update [{0}] set {1}";
+
+            var tableName = entityType.Name;
+            var updateValues = BuildUpdateValues(entity.GetType(), excludeColumns);
+
+            return UpdateCommand.Formatted(tableName, updateValues);
+        }
+
+        private static string BuildUpdateValues(Type entityType, IEnumerable<string> excludeColumns)
+        {
+            var requiredProps = entityType.GetProperties().Where(p => !excludeColumns.Contains(p.Name));
+            return BuildStringOverPropertyNames(requiredProps, "[{0}] = @{0},");
+        }
+
         private static string FormatTableColumnNames(Type entityType)
         {
             return BuildStringOverPropertyNames(entityType, ColumnNameFormat);
@@ -35,9 +55,14 @@ namespace YatORM
 
         private static string BuildStringOverPropertyNames(Type entityType, string formatString)
         {
+            return BuildStringOverPropertyNames(entityType.GetProperties(), formatString);
+        }
+
+        private static string BuildStringOverPropertyNames(IEnumerable<PropertyInfo> properties, string formatString)
+        {
             var builder = new StringBuilder();
 
-            entityType.GetProperties().ForEach(p => builder.AppendFormat(formatString, p.Name));
+            properties.ForEach(p => builder.AppendFormat(formatString, p.Name));
 
             builder.RemoveCharsFromEnd(1);
             return builder.ToString();

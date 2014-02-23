@@ -12,8 +12,9 @@ using YatORM.Tests.TestTools;
 
 namespace YatORM.Tests
 {
-    [TestFixture, Rollback]
-    public class InsertTests
+    [TestFixture]
+    [Rollback]
+    public class UpdateTests
     {
         private IDataSession _session;
 
@@ -27,20 +28,22 @@ namespace YatORM.Tests
         }
 
         [Test]
-        public void Insert_SingleEntity_ExpectFindInTable()
+        public void Update_SimpleUpdate_ExpectAllRequiredFieldsUpdated()
         {
             var testEntity = new SingleStringTestTable { Id = Guid.NewGuid(), TestString = "Any string" };
+            CommandRunner.InsertEntity(testEntity);
 
-            this._session.Insert(testEntity);
+            const string UpdatedValue = "I am updated";
+            testEntity.TestString = UpdatedValue;
 
-            var results = CommandRunner.IssueDynamicQuery("Select * from SingleStringTestTable").ToList();
+            this._session.Update(e => e.Id == testEntity.Id, testEntity);
 
-            results.Count().Should().Be(1);
+            var results = CommandRunner.IssueDynamicQuery("Select * from SingleStringTestTable").FirstOrDefault();
 
-            var firstResult = results.First();
+            // ReSharper disable once PossibleNullReferenceException
+            string foundTestStringValue = results.TestString;
 
-            Assert.AreEqual(testEntity.Id, firstResult.Id);
-            Assert.AreEqual(testEntity.TestString, firstResult.TestString);
+            foundTestStringValue.Should().Be(UpdatedValue);
         }
     }
 }
