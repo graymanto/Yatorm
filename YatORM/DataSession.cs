@@ -67,5 +67,13 @@ namespace YatORM
 
             return _db.ExecuteNonQuery(sqlTemplate, item) == 1;
         }
+
+        public bool Delete<TEntity>(Expression<Func<TEntity, bool>> queryExpression)
+        {
+            var querySql = _translator.Translate(queryExpression);
+            var fullSql = "delete from " + typeof(TEntity).Name + " where " + querySql;
+
+            return _db.ExecuteNonQuery(fullSql) == 1;
+        }
     }
 }

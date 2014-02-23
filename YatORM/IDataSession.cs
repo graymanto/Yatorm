@@ -19,5 +19,7 @@ namespace YatORM
         IEnumerable<TEntity> GetFromQuery<TEntity>(string query, dynamic parameters = null) where TEntity : new();
 
         bool Insert<TEntity>(TEntity item);
+
+        bool Delete<TEntity>(Expression<Func<TEntity, bool>> queryExpression);
     }
 }
