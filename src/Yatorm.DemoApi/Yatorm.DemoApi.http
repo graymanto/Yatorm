@@ -1,0 +1,6 @@
+@Yatorm.DemoApi_HostAddress = http://localhost:5220
+
+GET {{Yatorm.DemoApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

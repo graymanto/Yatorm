@@ -1,6 +1,10 @@
 #OS junk files
 [Tt]humbs.db
 *.DS_Store
+artifacts
+.vscode
+.idea
+.env
 
 #Visual Studio files
 *.[Oo]bj
