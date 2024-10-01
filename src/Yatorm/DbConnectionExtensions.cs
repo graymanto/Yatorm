@@ -33,7 +33,8 @@ public static class IDbConnectionExtensions
         where TResult : new()
     {
         var commandParams = parameters == null ? null : DBToTypeConverter.TransformClassToSqlParameters(parameters);
-        return ExecuteMappedCommand<TResult>(connection, query, CommandType.Text, commandParams);
+        EnumerableQuery results = ExecuteMappedCommand<TResult>(connection, query, CommandType.Text, commandParams);
+        return results as IQueryable<TResult>;
     }
 
     public static Task<IQueryable<TResult>> QueryAsync<TResult>(

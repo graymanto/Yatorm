@@ -88,12 +88,14 @@ namespace Yatorm
             var variables = new List<ParameterExpression> { dest };
             var body = new List<Expression> { Expression.Assign(dest, Expression.New(typeof(TMapped))), dest };
 
-            var nameOrdinalMap = cols.Select((c, i) => new { Index = i, Name = c })
+            var nameOrdinalMap = cols.Select((c, i) => new { Index = i, Name = c.ToLower() })
                 .ToDictionary(k => k.Name, v => v.Index);
 
             var getValueMethod = typeof(IDataRecord).GetMethod("GetValue");
 
-            foreach (var property in typeof(TMapped).GetProperties().Where(p => nameOrdinalMap.ContainsKey(p.Name)))
+            foreach (
+                var property in typeof(TMapped).GetProperties().Where(p => nameOrdinalMap.ContainsKey(p.Name.ToLower()))
+            )
             {
                 var setMethod = property.GetSetMethod();
                 if (setMethod == null || setMethod.GetParameters().Length != 1)
@@ -104,7 +106,7 @@ namespace Yatorm
                 var getValueFromReaderExpression = Expression.Call(
                     source,
                     getValueMethod,
-                    Expression.Constant(nameOrdinalMap[property.Name])
+                    Expression.Constant(nameOrdinalMap[property.Name.ToLower()])
                 );
 
                 var valueVariable = Expression.Variable(typeof(object), "readerValue");

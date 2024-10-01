@@ -32,5 +32,9 @@ namespace Yatorm
         bool Delete<TEntity>(Expression<Func<TEntity, bool>> queryExpression);
 
         bool Update<TEntity>(Expression<Func<TEntity, bool>> queryExpression, TEntity entity);
+
+        public int ExecuteNonQuery(string query, object? parameters = null);
+
+        public Task<int> ExecuteNonQueryAsync(string query, object? parameters = null);
     }
 }

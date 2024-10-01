@@ -1,8 +1,5 @@
 ﻿using FluentAssertions;
-using Yatorm.Tests.Entity;
 using Yatorm.Tests.TestTools;
-
-// ReSharper disable PossibleMultipleEnumeration
 
 namespace Yatorm.Tests
 {
@@ -14,22 +11,42 @@ namespace Yatorm.Tests
         {
             _session = TestSession.Create();
 
-            CommandRunner.ClearEntityTable<SingleStringTestTable>();
+            var createTableSql = """
+                create table testtable (Id INT, TestString TEXT)
+                """;
+
+            _session.ExecuteNonQuery(createTableSql);
         }
+
+        private class TestTable
+        {
+            public long Id { get; set; }
+            public string TestString { get; set; } = "";
+        };
 
         [Fact]
         public void FindAll_SingleEntity_ExpectFindsItem()
         {
-            var testIdValue = Guid.NewGuid();
-            var testStringValue = Guid.NewGuid().ToString();
+            // Arrange
 
-            var testEntity = new SingleStringTestTable { Id = testIdValue, TestString = testStringValue };
+            for (int i = 0; i < 10; i++)
+            {
+                var insertSql =
+                    $@"
+                    insert into testtable (Id, TestString) values ({i}, 'test string {i}')
+                ";
 
-            CommandRunner.InsertEntity(testEntity);
+                _session.ExecuteNonQuery(insertSql);
+            }
+            var testIdValue = 0;
+            var testStringValue = $"test string {testIdValue}";
 
-            var allEntities = _session.FindAll<SingleStringTestTable>().ToList();
+            // Act
 
-            allEntities.Should().HaveCount(1);
+            var allEntities = _session.FindAll<TestTable>().ToList();
+
+            // Assert
+            allEntities.Should().HaveCount(10);
 
             var foundEntity = allEntities.First();
 
@@ -40,34 +57,42 @@ namespace Yatorm.Tests
         [Fact]
         public void FindAll_MultipleEntity_ExpectFindsItems()
         {
-            var testIdValue = Guid.NewGuid();
-            var testStringValue = Guid.NewGuid().ToString();
+            // Arrange
 
-            var testIdValue2 = Guid.NewGuid();
-            var testStringValue2 = Guid.NewGuid().ToString();
+            for (int i = 1; i < 3; i++)
+            {
+                var insertSql =
+                    $@"
+                    insert into testtable (Id, TestString) values ({i}, 'test string {i}')
+                ";
 
-            var testEntity = new SingleStringTestTable { Id = testIdValue, TestString = testStringValue };
-            var testEntity2 = new SingleStringTestTable { Id = testIdValue2, TestString = testStringValue2 };
+                _session.ExecuteNonQuery(insertSql);
+            }
+            var testStringValue = "test string 1";
+            var testStringValue2 = "test string 2";
 
-            CommandRunner.InsertEntities(new[] { testEntity, testEntity2 });
+            // var testEntity = new TestTable { Id = testIdValue, TestString = testStringValue };
+            // var testEntity2 = new TestTable { Id = testIdValue2, TestString = testStringValue2 };
+            //
+            // CommandRunner.InsertEntities([testEntity, testEntity2]);
 
-            var allEntities = _session.FindAll<SingleStringTestTable>().ToList();
+            var allEntities = _session.FindAll<TestTable>().ToList();
 
             allEntities.Should().HaveCount(2);
 
-            var foundEntity = allEntities.FirstOrDefault(e => e.Id == testIdValue);
+            var foundEntity = allEntities.FirstOrDefault(e => e.Id == 1);
             foundEntity.Should().NotBeNull();
-            foundEntity.TestString.Should().Be(testStringValue);
+            foundEntity!.TestString.Should().Be(testStringValue);
 
-            foundEntity = allEntities.FirstOrDefault(e => e.Id == testIdValue2);
+            foundEntity = allEntities.FirstOrDefault(e => e.Id == 2);
             foundEntity.Should().NotBeNull();
-            foundEntity.TestString.Should().Be(testStringValue2);
+            foundEntity!.TestString.Should().Be(testStringValue2);
         }
 
         [Fact]
         public void FindAll_EmptyTable_ExpectEmptyEnumerable()
         {
-            var allEntities = _session.FindAll<SingleStringTestTable>();
+            var allEntities = _session.FindAll<TestTable>().ToList();
 
             allEntities.Should().NotBeNull();
             allEntities.Should().HaveCount(0);

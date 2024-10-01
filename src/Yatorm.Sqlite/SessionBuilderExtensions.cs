@@ -13,7 +13,7 @@ public static class SessionBuilderExtensions
 
     public static SessionBuilder.SessionBuilderContext WithSqliteMemoryConnection(this SessionBuilder builder)
     {
-        builder.ConnectionProvider = new SqlServerConnectionProvider();
+        builder.ConnectionProvider = new SqliteConnectionProvider("Data Source=:memory:");
         return new SessionBuilder.SessionBuilderContext(builder);
     }
 }

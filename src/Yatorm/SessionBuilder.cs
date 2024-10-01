@@ -20,10 +20,7 @@
         {
             public IDataSession BuildSession()
             {
-                if (builder.ConnectionProvider == null)
-                {
-                    builder.ConnectionProvider = new SqlServerConnectionProvider();
-                }
+                builder.ConnectionProvider ??= new SqlServerConnectionProvider();
 
                 return new DataSession(builder.ConnectionProvider);
             }

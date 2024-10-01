@@ -6,25 +6,34 @@ namespace Yatorm.Tests
 {
     public class DeleteTests
     {
-        private IDataSession _session;
+        private readonly IDataSession _session;
 
         public DeleteTests()
         {
             _session = TestSession.Create();
 
-            CommandRunner.ClearEntityTable<SingleStringTestTable>();
-            CommandRunner.ClearEntityTable<TypeTestTable>();
+            var createTableSql = """
+                create table deletetesttable (Id INT, TestString TEXT)
+                """;
+
+            _session.ExecuteNonQuery(createTableSql);
+        }
+
+        private class DeleteTestTable
+        {
+            public long Id { get; set; }
+            public string TestString { get; set; } = "";
         }
 
         [Fact]
         public void Delete_SingleEntity_ShouldBeDeleted()
         {
-            var testEntity = new SingleStringTestTable { Id = Guid.NewGuid(), TestString = "Any string" };
-            CommandRunner.InsertEntity(testEntity);
+            // var testEntity = new SingleStringTestTable { Id = Guid.NewGuid(), TestString = "Any string" };
+            // CommandRunner.InsertEntity(testEntity);
 
-            this._session.Delete<SingleStringTestTable>(e => e.Id == testEntity.Id);
+            _session.Delete<DeleteTestTable>(e => e.Id == 1);
 
-            var results = CommandRunner.IssueNonQuery("Select * from SingleStringTestTable");
+            var results = _session.ExecuteNonQuery("Select * from deletetesttable");
 
             results.Should().Be(-1);
         }

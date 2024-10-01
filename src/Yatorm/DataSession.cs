@@ -9,11 +9,24 @@ namespace Yatorm
 
         private readonly QueryTranslator _translator = new();
 
+        private IDbConnection OpenConnection
+        {
+            get
+            {
+                if (_connection.State == ConnectionState.Closed)
+                {
+                    _connection.Open();
+                }
+
+                return _connection;
+            }
+        }
+
         public IEnumerable<TEntity> FindAll<TEntity>()
             where TEntity : new()
         {
             var query = $"select * from {typeof(TEntity).Name}";
-            return _connection.Query<TEntity>(query);
+            return OpenConnection.Query<TEntity>(query);
         }
 
         public IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> queryExpression)
@@ -51,7 +64,7 @@ namespace Yatorm
             var querySql = _translator.Translate(queryExpression);
             var fullSql = $"select * from {typeof(TEntity).Name} where {querySql}";
 
-            return _connection.Single<TEntity>(fullSql);
+            return OpenConnection.Single<TEntity>(fullSql);
         }
 
         public Task<TEntity> SingleAsync<TEntity>(Expression<Func<TEntity, bool>> queryExpression)
@@ -74,7 +87,8 @@ namespace Yatorm
         public IEnumerable<TEntity> GetFromQuery<TEntity>(string query, dynamic? parameters = null)
             where TEntity : new()
         {
-            return IDbConnectionExtensions.Query<TEntity>(_connection, query, parameters);
+            EnumerableQuery queryable = IDbConnectionExtensions.Query<TEntity>(_connection, query, parameters);
+            return queryable as IQueryable<TEntity> ?? Enumerable.Empty<TEntity>();
         }
 
         public bool Insert<TEntity>(TEntity? item)
@@ -104,6 +118,14 @@ namespace Yatorm
 
             return _connection.ExecuteNonQuery(fullSql, parameters) == 1;
         }
+
+        public int ExecuteNonQuery(string query, object? parameters = null)
+        {
+            return OpenConnection.ExecuteNonQuery(query, parameters);
+        }
+
+        public Task<int> ExecuteNonQueryAsync(string query, object? parameters = null) =>
+            _connection.ExecuteNonQueryAsync(query, parameters);
 
         public void Dispose()
         {
