@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Yatorm.Sqlite\Yatorm.Sqlite.csproj" />
     <ProjectReference Include="..\..\src\Yatorm\Yatorm.csproj" />
+    <ProjectReference Include="..\..\src\Yatorm.SqlBuilder\Yatorm.SqlBuilder.csproj" />
   </ItemGroup>
 
 </Project>

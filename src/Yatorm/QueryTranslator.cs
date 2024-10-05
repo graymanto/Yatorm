@@ -16,15 +16,9 @@ namespace Yatorm
 
         private string _whereClause = string.Empty;
 
-        public int? Skip
-        {
-            get { return this._skip; }
-        }
+        public int? Skip => _skip;
 
-        public int? Take
-        {
-            get { return this._take; }
-        }
+        public int? Take => _take;
 
         public string OrderBy => _orderBy;
 
@@ -100,16 +94,14 @@ namespace Yatorm
             {
                 case ExpressionType.Not:
                     _sb.Append(" NOT ");
-                    Visit(u.Operand);
                     break;
                 case ExpressionType.Convert:
-                    Visit(u.Operand);
                     break;
                 default:
-                    throw new NotSupportedException(
-                        string.Format("The unary operator '{0}' is not supported", u.NodeType)
-                    );
+                    throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
             }
+
+            Visit(u.Operand);
 
             return u;
         }
@@ -122,13 +114,13 @@ namespace Yatorm
         /// </returns>
         protected override Expression VisitBinary(BinaryExpression b)
         {
-            this._sb.Append("(");
+            _sb.Append("(");
             Visit(b.Left);
 
             switch (b.NodeType)
             {
                 case ExpressionType.And:
-                    this._sb.Append(" AND ");
+                    _sb.Append(" AND ");
                     break;
 
                 case ExpressionType.AndAlso:
@@ -236,15 +228,15 @@ namespace Yatorm
 
                 if (type == typeof(string) || type == typeof(DateTime) || type == typeof(Guid))
                 {
-                    this._sb.AppendInSingleQuotes(valueResolver());
+                    _sb.AppendInSingleQuotes(valueResolver());
                 }
                 else if (type == typeof(bool))
                 {
-                    this._sb.Append((bool)valueResolver() ? 1 : 0);
+                    _sb.Append((bool)valueResolver() ? 1 : 0);
                 }
                 else
                 {
-                    this._sb.Append(valueResolver());
+                    _sb.Append(valueResolver());
                 }
 
                 return m;

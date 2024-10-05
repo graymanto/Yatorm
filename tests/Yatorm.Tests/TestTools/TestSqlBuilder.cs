@@ -3,7 +3,7 @@ using Yatorm.Extensions;
 
 namespace Yatorm.Tests.TestTools
 {
-    internal class SqlBuilder
+    internal class TestSqlBuilder
     {
         private const string ParameterFormat = "@{0},";
 

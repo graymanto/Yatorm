@@ -16,7 +16,7 @@ namespace Yatorm.Tests.TestTools
         /// <returns></returns>
         public static int InsertEntity<TEntity>(TEntity item)
         {
-            var insertCommand = SqlBuilder.InsertStatement<TEntity>();
+            var insertCommand = TestSqlBuilder.InsertStatement<TEntity>();
             var parameters = MakeQueryParametersFromEntity(item);
 
             return IssueNonQuery(insertCommand, parameters);
@@ -29,7 +29,7 @@ namespace Yatorm.Tests.TestTools
         /// <param name="items"></param>
         public static void InsertEntities<TEntity>(IEnumerable<TEntity> items)
         {
-            var insertCommand = SqlBuilder.InsertStatement<TEntity>();
+            var insertCommand = TestSqlBuilder.InsertStatement<TEntity>();
 
             var parameters = items.Select(MakeQueryParametersFromEntity);
 
@@ -45,7 +45,7 @@ namespace Yatorm.Tests.TestTools
         /// <typeparam name="TEntity"></typeparam>
         public static void ClearEntityTable<TEntity>()
         {
-            var command = SqlBuilder.TruncateStatement<TEntity>();
+            var command = TestSqlBuilder.TruncateStatement<TEntity>();
 
             IssueNonQuery(command);
         }
