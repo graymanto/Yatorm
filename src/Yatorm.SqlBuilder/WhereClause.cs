@@ -2,11 +2,11 @@ namespace Yatorm.Tools;
 
 public class WhereClause : ISqlClause
 {
-    private readonly bool _isAnd;
+    private readonly ClauseType _clauseType;
 
-    public WhereClause(string column, CompOp op, object value, bool isAnd = false)
+    public WhereClause(string column, CompOp op, object value, ClauseType clauseType = ClauseType.Where)
     {
-        _isAnd = isAnd;
+        _clauseType = clauseType;
         Column = column;
         Op = op;
         Value = value;
@@ -16,7 +16,7 @@ public class WhereClause : ISqlClause
     private CompOp Op { get; }
     private object Value { get; }
 
-    private string KeyWord => _isAnd ? "AND" : "WHERE";
+    private string KeyWord => _clauseType.ToSql();
 
     public void ToSql(SqlBuilder builder)
     {

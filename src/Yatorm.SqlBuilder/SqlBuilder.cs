@@ -5,6 +5,7 @@ namespace Yatorm.Tools;
 public class SqlBuilder
 {
     private readonly List<ISqlStatement> _statements = [];
+    private ISqlStatement? _activeStatement;
 
     internal readonly StringBuilder Builder = new();
 
@@ -18,56 +19,73 @@ public class SqlBuilder
 
     public SqlBuilder Select()
     {
-        _statements.Add(new SelectStatement("*"));
+        AddStatement(new SelectStatement("*"));
         return this;
     }
 
     public SqlBuilder Select(params string[] columns)
     {
-        _statements.Add(new SelectStatement(columns));
+        AddStatement(new SelectStatement(columns));
         return this;
     }
 
     public SqlBuilder From(string table, string alias)
     {
-        _statements.LastOrDefault()?.AddClause(new FromClause(table, alias));
+        _activeStatement?.AddClause(new FromClause(table, alias));
         return this;
     }
 
     public SqlBuilder From(string table)
     {
-        _statements.LastOrDefault()?.AddClause(new FromClause(table));
+        _activeStatement?.AddClause(new FromClause(table));
         return this;
     }
 
     public SqlBuilder Where(string column, CompOp op, object value)
     {
         var hasClause = _statements.LastOrDefault()?.LastClause is WhereClause;
-        _statements.LastOrDefault()?.AddClause(new WhereClause(column, op, value, hasClause));
+        var clauseType = hasClause ? ClauseType.And : ClauseType.Where;
+        _statements.LastOrDefault()?.AddClause(new WhereClause(column, op, value, clauseType));
         return this;
     }
 
     public SqlBuilder And(string column, CompOp op, object value)
     {
-        _statements.LastOrDefault()?.AddClause(new WhereClause(column, op, value, true));
+        _activeStatement?.AddClause(new WhereClause(column, op, value, ClauseType.And));
+        return this;
+    }
+
+    public SqlBuilder Or(string column, CompOp op, object value)
+    {
+        _activeStatement?.AddClause(new WhereClause(column, op, value, ClauseType.Or));
         return this;
     }
 
     public SqlBuilder OrderBy(params string[] columns)
     {
-        _statements.LastOrDefault()?.AddClause(new OrderByClause(columns));
+        _activeStatement?.AddClause(new OrderByClause(columns));
         return this;
     }
 
     public SqlBuilder OrderBy(params int[] columns)
     {
-        _statements.LastOrDefault()?.AddClause(new OrderByClause(columns));
+        _activeStatement?.AddClause(new OrderByClause(columns));
         return this;
     }
 
     public string ToSql()
     {
-        _statements.LastOrDefault()?.ToSql(this);
+        foreach (var statement in _statements)
+        {
+            statement.ToSql(this);
+        }
+
         return Builder.ToString().TrimEnd();
+    }
+
+    private void AddStatement(ISqlStatement statement)
+    {
+        _statements.Add(statement);
+        _activeStatement = statement;
     }
 }
