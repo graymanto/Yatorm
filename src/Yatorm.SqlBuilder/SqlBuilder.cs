@@ -61,6 +61,25 @@ public class SqlBuilder
         return this;
     }
 
+    public SqlBuilder AndWrapped(string column, CompOp op, object value, params ISqlClause[] innerStatements)
+    {
+        _activeStatement?.AddClause(new WrappedClause(column, op, value, ClauseType.And, innerStatements));
+        return this;
+    }
+
+    public SqlBuilder AndLike(string column, string value)
+    {
+        _activeStatement?.AddClause(new WhereClause(column, CompOp.Like, value, ClauseType.And));
+        return this;
+    }
+
+    //TODO: this thould really be generic to enforce type safety so all values are of the same type
+    public SqlBuilder AndIn<T>(string column, IEnumerable<T> values)
+    {
+        _activeStatement?.AddClause(new InClause<T>(column, ClauseType.And, values));
+        return this;
+    }
+
     public SqlBuilder OrderBy(params string[] columns)
     {
         _activeStatement?.AddClause(new OrderByClause(columns));
@@ -70,6 +89,18 @@ public class SqlBuilder
     public SqlBuilder OrderBy(params int[] columns)
     {
         _activeStatement?.AddClause(new OrderByClause(columns));
+        return this;
+    }
+
+    public SqlBuilder GroupBy(params string[] columns)
+    {
+        _activeStatement?.AddClause(new GroupByClause(columns));
+        return this;
+    }
+
+    public SqlBuilder GroupBy(params int[] columns)
+    {
+        _activeStatement?.AddClause(new GroupByClause(columns));
         return this;
     }
 

@@ -11,6 +11,7 @@ public static class CompOpExtensions
             CompOp.Gte => ">=",
             CompOp.Lt => "<",
             CompOp.Lte => "<=",
+            CompOp.Like => "LIKE",
             _ => throw new NotImplementedException()
         };
 }

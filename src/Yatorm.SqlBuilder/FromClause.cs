@@ -4,6 +4,11 @@ public class FromClause : ISqlClause
 {
     public FromClause(string table, string? alias = null)
     {
+        if (string.IsNullOrEmpty(table))
+        {
+            throw new ArgumentException("Table name cannot be null or empty.", nameof(table));
+        }
+
         Table = table;
         Alias = alias;
     }

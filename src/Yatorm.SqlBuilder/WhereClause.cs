@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Yatorm.Tools;
 
 public class WhereClause : ISqlClause

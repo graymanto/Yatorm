@@ -4,11 +4,24 @@ namespace Yatorm.Tests.Builder;
 
 public class WhereClauseTests
 {
-    [Fact]
-    public void WhereClause_EqualityOperator_ReturnsCorrectSql()
+    [Theory]
+    [InlineData("p.Id", CompOp.Eq, 1, ClauseType.Where, "WHERE p.Id = 1")]
+    [InlineData("p.Price", CompOp.Gt, 100, ClauseType.Where, "WHERE p.Price > 100")]
+    [InlineData("p.Price", CompOp.Gte, 100, ClauseType.Where, "WHERE p.Price >= 100")]
+    [InlineData("p.Price", CompOp.Lt, 50, ClauseType.Where, "WHERE p.Price < 50")]
+    [InlineData("p.Price", CompOp.Lte, 50, ClauseType.Where, "WHERE p.Price <= 50")]
+    [InlineData("p.Name", CompOp.Eq, "Test", ClauseType.And, "AND p.Name = 'Test'")]
+    [InlineData("p.Name", CompOp.Eq, "Test", ClauseType.Or, "OR p.Name = 'Test'")]
+    public void WhereClause_TableTests_ReturnsCorrectSql(
+        string column,
+        CompOp op,
+        object value,
+        ClauseType clauseType,
+        string result
+    )
     {
         // Arrange
-        var whereClause = new WhereClause("p.Id", CompOp.Eq, 1);
+        var whereClause = new WhereClause(column, op, value, clauseType);
         var builder = new SqlBuilder();
 
         // Act
@@ -16,66 +29,6 @@ public class WhereClauseTests
         var sql = builder.ToSql();
 
         // Assert
-        Assert.Equal("WHERE p.Id = 1", sql);
-    }
-
-    [Fact]
-    public void WhereClause_GreaterThanOperator_ReturnsCorrectSql()
-    {
-        // Arrange
-        var whereClause = new WhereClause("p.Price", CompOp.Gt, 100);
-        var builder = new SqlBuilder();
-
-        // Act
-        whereClause.ToSql(builder);
-        var sql = builder.ToSql();
-
-        // Assert
-        Assert.Equal("WHERE p.Price > 100", sql);
-    }
-
-    [Fact]
-    public void WhereClause_LessThanOperator_ReturnsCorrectSql()
-    {
-        // Arrange
-        var whereClause = new WhereClause("p.Price", CompOp.Lt, 50);
-        var builder = new SqlBuilder();
-
-        // Act
-        whereClause.ToSql(builder);
-        var sql = builder.ToSql();
-
-        // Assert
-        Assert.Equal("WHERE p.Price < 50", sql);
-    }
-
-    [Fact]
-    public void WhereClause_AndClause_ReturnsCorrectSql()
-    {
-        // Arrange
-        var whereClause = new WhereClause("p.Name", CompOp.Eq, "Test", ClauseType.And);
-        var builder = new SqlBuilder();
-
-        // Act
-        whereClause.ToSql(builder);
-        var sql = builder.ToSql();
-
-        // Assert
-        Assert.Equal("AND p.Name = 'Test'", sql);
-    }
-
-    [Fact]
-    public void WhereClause_WithOrClause_ReturnsCorrectSql()
-    {
-        // Arrange
-        var whereClause = new WhereClause("p.Name", CompOp.Eq, "Test", ClauseType.Or);
-        var builder = new SqlBuilder();
-
-        // Act
-        whereClause.ToSql(builder);
-        var sql = builder.ToSql();
-
-        // Assert
-        Assert.Equal("OR p.Name = 'Test'", sql);
+        Assert.Equal(result, sql);
     }
 }

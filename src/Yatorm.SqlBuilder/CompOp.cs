@@ -8,4 +8,5 @@ public enum CompOp
     Gte,
     Lt,
     Lte,
+    Like,
 }
