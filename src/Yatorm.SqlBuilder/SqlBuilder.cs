@@ -29,6 +29,42 @@ public class SqlBuilder
         return this;
     }
 
+    public SqlBuilder Union()
+    {
+        AddStatement(new LinkingStatement(LinkingStatementType.Union));
+        return this;
+    }
+
+    public SqlBuilder UnionAll()
+    {
+        AddStatement(new LinkingStatement(LinkingStatementType.UnionAll));
+        return this;
+    }
+
+    public SqlBuilder Intersect()
+    {
+        AddStatement(new LinkingStatement(LinkingStatementType.Intersect));
+        return this;
+    }
+
+    public SqlBuilder IntersectAll()
+    {
+        AddStatement(new LinkingStatement(LinkingStatementType.IntersectAll));
+        return this;
+    }
+
+    public SqlBuilder Except()
+    {
+        AddStatement(new LinkingStatement(LinkingStatementType.Except));
+        return this;
+    }
+
+    public SqlBuilder ExceptAll()
+    {
+        AddStatement(new LinkingStatement(LinkingStatementType.ExceptAll));
+        return this;
+    }
+
     public SqlBuilder From(string table, string alias)
     {
         _activeStatement?.AddClause(new FromClause(table, alias));
