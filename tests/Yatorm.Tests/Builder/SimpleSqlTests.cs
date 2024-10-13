@@ -85,7 +85,7 @@ public class SimpleSqlTests
     }
 
     [Fact]
-    public void SqlBuilder_WrappedOrClause_ReturnsCorrectSql()
+    public void SqlBuilder_NestedOrClause_ReturnsCorrectSql()
     {
         // Arrange
 
@@ -105,12 +105,118 @@ public class SimpleSqlTests
             .Select("Name", "Price", "Type")
             .From("Products", "p")
             .Where("p.Id", CompOp.Gte, 0)
-            .AndWrapped(
-                "p.Name",
-                CompOp.Eq,
-                "Test",
-                new WhereClause("p.Name", CompOp.Eq, "Test2", ClauseType.Or),
-                new WhereClause("p.Name", CompOp.Eq, "Test3", ClauseType.Or)
+            // TODO: want to be able to to
+            .And(q =>
+                q.Where("p.Name", CompOp.Eq, "Test").Or("p.Name", CompOp.Eq, "Test2").Or("p.Name", CompOp.Eq, "Test3")
+            )
+            .ToSql();
+
+        // Assert
+
+        Assert.Equal(expectedSql.NormalizeForComparison(), generatedSql.NormalizeForComparison());
+    }
+
+    [Fact]
+    public void SqlBuilder_RawSqlNestedClause_ReturnsCorrectSql()
+    {
+        // Arrange
+
+        string expectedSql = """
+            SELECT "Name", "Price", "Type" 
+            FROM "Products" p
+            WHERE p.Id >= 0
+            AND (
+                p.Name is null
+                OR (
+                    p.Price > 50
+                    AND p.Type = 'Type2'
+                )
+            )
+            """;
+
+        // Act
+        var generatedSql = new SqlBuilder()
+            .Select("Name", "Price", "Type")
+            .From("Products", "p")
+            .Where("p.Id", CompOp.Gte, 0)
+            .And(q =>
+                q.Where("p.Name is null").Or(q1 => q1.Where("p.Price", CompOp.Gt, 50).And("p.Type", CompOp.Eq, "Type2"))
+            )
+            .ToSql();
+
+        // Assert
+
+        Assert.Equal(expectedSql.NormalizeForComparison(), generatedSql.NormalizeForComparison());
+    }
+
+    [Fact]
+    public void SqlBuilder_DoubleNestedOrClause_ReturnsCorrectSql()
+    {
+        // Arrange
+
+        string expectedSql = """
+            SELECT "Name", "Price", "Type" 
+            FROM "Products" p
+            WHERE p.Id >= 0
+            AND (
+                p.Name = 'Test'
+                AND (
+                    p.Type = 'Type1'
+                    OR p.Name = 'Type2'
+                )
+            )
+            """;
+
+        // Act
+        var generatedSql = new SqlBuilder()
+            .Select("Name", "Price", "Type")
+            .From("Products", "p")
+            .Where("p.Id", CompOp.Gte, 0)
+            // TODO: want to be able to to
+            .And(q =>
+                q.Where("p.Name", CompOp.Eq, "Test")
+                    .And(q1 => q1.Where("p.Type", CompOp.Eq, "Type1").Or("p.Name", CompOp.Eq, "Type2"))
+            )
+            .ToSql();
+
+        // Assert
+
+        Assert.Equal(expectedSql.NormalizeForComparison(), generatedSql.NormalizeForComparison());
+    }
+
+    [Fact]
+    public void SqlBuilder_MultipleNestedWhereAnd_ReturnsCorrectSql()
+    {
+        // Arrange
+
+        string expectedSql = """
+            SELECT "Name", "Price", "Type" 
+            FROM "Products" p
+            WHERE (
+                p.Id = 0 OR ( p.Id > 0 AND p.Price > 50 )
+            )   
+            AND (
+                p.Name = 'Test'
+                AND (
+                    p.Type = 'Type1'
+                    OR ( p.Price = 100 AND p.Price = 200 )
+                )
+            )
+            """;
+
+        // Act
+        var generatedSql = new SqlBuilder()
+            .Select("Name", "Price", "Type")
+            .From("Products", "p")
+            .Where(q =>
+                q.Where("p.Id", CompOp.Eq, 0).Or(q => q.Where("p.Id", CompOp.Gt, 0).And("p.Price", CompOp.Gt, 50))
+            )
+            .And(q =>
+                q.Where("p.Name", CompOp.Eq, "Test")
+                    .And(q =>
+                        q.Where("p.Type", CompOp.Eq, "Type1")
+                            .Or(q => q.Where("p.Price", CompOp.Eq, 100).And("p.Price", CompOp.Eq, 200))
+                    )
             )
             .ToSql();
 

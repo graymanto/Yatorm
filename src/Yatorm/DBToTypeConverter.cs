@@ -143,7 +143,7 @@ namespace Yatorm
         /// </summary>
         /// <returns>
         /// </returns>
-        private static Delegate MakeParamMapper(Type paramType)
+        private static Delegate? MakeParamMapper(Type paramType)
         {
             return MakeParamMapper(paramType, null);
         }
@@ -153,7 +153,7 @@ namespace Yatorm
         /// </summary>
         /// <returns>
         /// </returns>
-        private static Delegate MakeParamMapper(Type paramType, IEnumerable<string>? excludeColumns)
+        private static Delegate? MakeParamMapper(Type paramType, IEnumerable<string>? excludeColumns)
         {
             excludeColumns ??= [];
 

@@ -12,6 +12,8 @@ public static class CompOpExtensions
             CompOp.Lt => "<",
             CompOp.Lte => "<=",
             CompOp.Like => "LIKE",
+            CompOp.Is => "IS",
+            CompOp.IsNot => "IS NOT",
             _ => throw new NotImplementedException()
         };
 }

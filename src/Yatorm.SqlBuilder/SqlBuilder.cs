@@ -9,6 +9,8 @@ public class SqlBuilder
 
     internal readonly StringBuilder Builder = new();
 
+    internal List<ISqlStatement> Statements => _statements;
+
     public SqlSyntax Syntax { get; private set; } = SqlSyntax.Standard;
 
     public SqlBuilder WithSyntax(SqlSyntax syntax)
@@ -85,6 +87,13 @@ public class SqlBuilder
         return this;
     }
 
+    public SqlBuilder Where(Action<NestedClause> nested)
+    {
+        var nestedClause = new NestedClause(this, ClauseType.Where);
+        nested(nestedClause);
+        return this;
+    }
+
     public SqlBuilder And(string column, CompOp op, object value)
     {
         _activeStatement?.AddClause(new WhereClause(column, op, value, ClauseType.And));
@@ -94,6 +103,13 @@ public class SqlBuilder
     public SqlBuilder Or(string column, CompOp op, object value)
     {
         _activeStatement?.AddClause(new WhereClause(column, op, value, ClauseType.Or));
+        return this;
+    }
+
+    public SqlBuilder And(Action<NestedClause> nested)
+    {
+        var nestedClause = new NestedClause(this, ClauseType.And);
+        nested(nestedClause);
         return this;
     }
 
@@ -154,5 +170,35 @@ public class SqlBuilder
     {
         _statements.Add(statement);
         _activeStatement = statement;
+    }
+
+    public class NestedClause
+    {
+        private readonly SqlBuilder _builder;
+        private readonly ClauseType _clauseType;
+
+        internal SqlBuilder Builder => _builder;
+
+        public NestedClause(SqlBuilder builder, ClauseType clauseType)
+        {
+            _builder = builder;
+            _clauseType = clauseType;
+        }
+
+        public void AddClause(ISqlClause clause) => _builder._activeStatement?.AddClause(clause);
+
+        public WrappedClause Where(string column, CompOp op, object value)
+        {
+            var wrappedClause = new WrappedClause(column, op, value, _clauseType);
+            _builder._activeStatement?.AddClause(wrappedClause);
+            return wrappedClause;
+        }
+
+        public RawWrappedClause Where(string sql)
+        {
+            var wrappedClause = new RawWrappedClause(sql, _clauseType);
+            _builder._activeStatement?.AddClause(wrappedClause);
+            return wrappedClause;
+        }
     }
 }
