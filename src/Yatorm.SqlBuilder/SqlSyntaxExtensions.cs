@@ -15,4 +15,7 @@ public static class SqlSyntaxExtensions
             SqlSyntax.SqlServer => "]",
             _ => "\""
         };
+
+    public static string EscapeIdentifier(this SqlSyntax syntax, string value) =>
+        $"{syntax.EscapeCharLeft()}{value}{syntax.EscapeCharRight()}";
 }

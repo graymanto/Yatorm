@@ -209,13 +209,13 @@ public class SimpleSqlTests
             .Select("Name", "Price", "Type")
             .From("Products", "p")
             .Where(q =>
-                q.Where("p.Id", CompOp.Eq, 0).Or(q => q.Where("p.Id", CompOp.Gt, 0).And("p.Price", CompOp.Gt, 50))
+                q.Where("p.Id", CompOp.Eq, 0).Or(q1 => q1.Where("p.Id", CompOp.Gt, 0).And("p.Price", CompOp.Gt, 50))
             )
             .And(q =>
                 q.Where("p.Name", CompOp.Eq, "Test")
-                    .And(q =>
-                        q.Where("p.Type", CompOp.Eq, "Type1")
-                            .Or(q => q.Where("p.Price", CompOp.Eq, 100).And("p.Price", CompOp.Eq, 200))
+                    .And(q1 =>
+                        q1.Where("p.Type", CompOp.Eq, "Type1")
+                            .Or(q2 => q2.Where("p.Price", CompOp.Eq, 100).And("p.Price", CompOp.Eq, 200))
                     )
             )
             .ToSql();

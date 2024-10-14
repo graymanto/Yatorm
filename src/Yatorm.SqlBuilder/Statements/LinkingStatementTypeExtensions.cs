@@ -1,6 +1,6 @@
 namespace Yatorm.Tools;
 
-public static class LinkingStatementTypeExceptions
+public static class LinkingStatementTypeExtensions
 {
     public static string ToSql(this LinkingStatementType type)
     {

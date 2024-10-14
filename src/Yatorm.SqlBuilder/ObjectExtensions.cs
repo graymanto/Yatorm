@@ -16,33 +16,51 @@ internal static class ObjectExtensions
         return stringInput.Contains("@") || stringInput.Contains("$") || stringInput.Contains("{");
     }
 
-    internal static string StringifySqlValue(this object value)
+    internal static string StringifySqlValue(this object? value, SqlSyntax syntax = SqlSyntax.Standard)
+    {
+        if (value is null)
+        {
+            return "null";
+        }
+
+        var valueType = value.GetType();
+
+        if (Type.GetTypeCode(valueType) == TypeCode.Boolean && syntax == SqlSyntax.SqlServer)
+        {
+            return (bool)value ? "1" : "0";
+        }
+
+        return valueType.IsNumericType() || value.IsParameterBinding() ? value.ToString() ?? "" : $"'{value}'";
+    }
+
+    internal static string StringifySqlValue<T>(this T value, SqlSyntax syntax = SqlSyntax.Standard)
     {
         if (value is null)
         {
             throw new ArgumentException("Value to stringify can not be null");
         }
 
-        return value.GetType().IsNumericType() || value.IsParameterBinding() ? value.ToString() ?? "" : $"'{value}'";
-    }
+        var valueType = value.GetType();
 
-    internal static string StringifySqlValue<T>(this T value)
-    {
-        if (value is null)
+        if (valueType == typeof(bool) && syntax == SqlSyntax.SqlServer)
         {
-            throw new ArgumentException("Value to stringify can not be null");
+            dynamic dynamicValue = value;
+            return (bool)dynamicValue ? "1" : "0";
         }
 
         return value.GetType().IsNumericType() || value.IsParameterBinding() ? value.ToString() ?? "" : $"'{value}'";
     }
 
-    internal static IEnumerable<string> StringifySqlValues<T>(this IEnumerable<T> values)
+    internal static IEnumerable<string> StringifySqlValues<T>(
+        this IEnumerable<T> values,
+        SqlSyntax syntax = SqlSyntax.Standard
+    )
     {
         if (values is null)
         {
             throw new ArgumentException("Values to stringify can not be null");
         }
 
-        return values.Select(StringifySqlValue);
+        return values.Select(v => v.StringifySqlValue(syntax));
     }
 }

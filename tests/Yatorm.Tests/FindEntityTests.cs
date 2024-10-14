@@ -1,6 +1,4 @@
 ﻿using FluentAssertions;
-using Yatorm.Tests.Entity;
-using Yatorm.Tests.Settings;
 using Yatorm.Tests.TestTools;
 
 namespace Yatorm.Tests
