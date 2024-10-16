@@ -6,10 +6,10 @@ public class SelectStatement : ISqlStatement
 
     private string[] Columns { get; }
 
-    public static SelectStatement FromType<T>()
-    {
-        return new SelectStatement();
-    }
+    // public static SelectStatement FromType<T>()
+    // {
+    //     return new SelectStatement();
+    // }
 
     public SelectStatement(params string[] columns)
     {

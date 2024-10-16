@@ -24,19 +24,18 @@ public class InsertStatement : ISqlStatement
 
     public void ToSql(SqlBuilder builder)
     {
-        var escapeLeft = builder.Syntax.EscapeCharLeft();
-        var escapeRight = builder.Syntax.EscapeCharRight();
-
-        var columns = string.Join(", ", InsertValues.Select(c => $"{escapeLeft}{c.Item1}{escapeRight}"));
+        var columns = string.Join(", ", InsertValues.Select(c => builder.Syntax.EscapeIdentifier(c.Item1)));
         var values = string.Join(", ", InsertValues.Select(i => $"{i.Item2.StringifySqlValue(builder.Syntax)}"));
-        var fullTableName = $"{escapeLeft}{_tableName}{escapeRight}";
+        var fullTableName = builder.Syntax.EscapeIdentifier(_tableName);
 
         builder.Builder.AppendLine($"INSERT INTO {fullTableName} ({columns}) VALUES ({values})");
 
-        // TODO: not yet valid for insert statements. Need to complete version with clauses
-        foreach (var clause in _clauses)
+        foreach (var clause in _clauses.Where(c => c is ValuesClause))
         {
             clause.ToSql(builder);
+            builder.Builder.AppendLine(",");
         }
+
+        builder.Builder.Length--;
     }
 }

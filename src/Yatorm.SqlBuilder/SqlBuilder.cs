@@ -156,6 +156,24 @@ public class SqlBuilder
         return this;
     }
 
+    public SqlBuilder Insert(string tableName, (string, object?)[] values)
+    {
+        AddStatement(new InsertStatement(tableName, values));
+        return this;
+    }
+
+    public SqlBuilder Insert(string tableName, string[] columns)
+    {
+        AddStatement(new InsertWithClauses(tableName, columns));
+        return this;
+    }
+
+    public SqlBuilder Values(params object?[] values)
+    {
+        _activeStatement?.AddClause(new ValuesClause(values));
+        return this;
+    }
+
     public string ToSql()
     {
         foreach (var statement in _statements)

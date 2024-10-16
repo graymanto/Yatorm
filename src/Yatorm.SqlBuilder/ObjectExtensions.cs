@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Yatorm.Tools;
 
@@ -25,12 +26,19 @@ internal static class ObjectExtensions
 
         var valueType = value.GetType();
 
-        if (Type.GetTypeCode(valueType) == TypeCode.Boolean && syntax == SqlSyntax.SqlServer)
+        if (Type.GetTypeCode(valueType) == TypeCode.Boolean)
         {
-            return (bool)value ? "1" : "0";
+            if (syntax == SqlSyntax.SqlServer)
+            {
+                return (bool)value ? "1" : "0";
+            }
+
+            return (bool)value ? "true" : "false";
         }
 
-        return valueType.IsNumericType() || value.IsParameterBinding() ? value.ToString() ?? "" : $"'{value}'";
+        return valueType.IsNumericType() || value.IsParameterBinding()
+            ? Convert.ToString(value, CultureInfo.InvariantCulture) ?? ""
+            : $"'{value}'";
     }
 
     internal static string StringifySqlValue<T>(this T value, SqlSyntax syntax = SqlSyntax.Standard)
